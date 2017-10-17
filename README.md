@@ -16,28 +16,23 @@ The goals / steps of this project are the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
-This readme/writeup refers to the iPython (Jupyter) Notebook file `./src/AdvancedLaneProj4.ipynb`, however the code is also implemented in a Python file `./src/laneOverlayCreate.py`
+This readme/writeup refers to the iPython (Jupyter) Notebook file `AdvancedLaneProj4.ipynb`, however the code is also implemented in a Python file `laneOverlayCreate.py`
 
 [//]: # (Image References)
 
 
 [image1]: ./write_up_images/undistort_calibration.png "Undistorted"
 [image2]: ./write_up_images/preprocess_pipeline.png "Image pipeline"
-
 [image3]: ./write_up_images/undistorted_difference.png "Undistorted difference"
 [image4]: ./write_up_images/unwarped_warped_parallel.png "Perspective transform"
-
-
 [image5]: ./write_up_images/historgram.png "Histogram"
 [image6]: ./write_up_images/lanesWindow.png "Lane margins"
-
-
 [image7]: ./write_up_images/laneMask.png "Perspective transform"
 [image8]: ./write_up_images/laneComplete.png "Perspective transform"
 
 
 
-[video1]: ./output_image/project_video.mp4 "Video"
+
 
 ---
 
@@ -52,7 +47,7 @@ $$y_{corrected} = y(1+k_1r^2+k_2r^4+k_3r^6)+(p_1(r^2+2y^2)+2p_2xy)$$
 
 Higher order radial distortion terms up to $k_6$ can be used in OpenCV. In addition to the distortion effects, we can compute the camera matrix which maps the real world to the distorted coordinates. This allows us to map image space distances (eg. pixels) to real world distances (eg. mm). 
 
-Thankfully OpenCV provides a built in implementation for calibration. The following steps are implemented in the first cell of the iPython Notebook (`./src/AdvancedLaneProj4.ipynb`). The function `cv2.calibrateCamera()` takes a set of 3D points in the world (`objpoints`) and a corresponding set of 2D points in image space(`imgpoints`) and returns the camera matrix and distortion coefficients. A sufficient number of calibration images in the form of checkerboard patterns with 9x6 internal corners are used to create a well posed problem. The function `cv2.findChessboardCorners()` returns the image space location of each of the internal corners and is used to produce the list `imgpoints`. The list of 3D points `objpoints` is artificially created to be squares of 1x1 units in the x-y plane with the z-coordinate set to zero. Since the real world units are not used, the projection matrix does not provide us with real world distance measurements.
+Thankfully OpenCV provides a built in implementation for calibration. The following steps are implemented in the first cell of the iPython Notebook (`AdvancedLaneProj4.ipynb`). The function `cv2.calibrateCamera()` takes a set of 3D points in the world (`objpoints`) and a corresponding set of 2D points in image space(`imgpoints`) and returns the camera matrix and distortion coefficients. A sufficient number of calibration images in the form of checkerboard patterns with 9x6 internal corners are used to create a well posed problem. The function `cv2.findChessboardCorners()` returns the image space location of each of the internal corners and is used to produce the list `imgpoints`. The list of 3D points `objpoints` is artificially created to be squares of 1x1 units in the x-y plane with the z-coordinate set to zero. Since the real world units are not used, the projection matrix does not provide us with real world distance measurements.
 
 Using `cv2.undistort()` with the camera matrix and distortion coefficients we can undistort any image taken with the same camera. A test image is shown below before and after distortion correction. The "barrel" effect is noticable on the left image whereas on the right, the checkerboard appears to be straight.
 
@@ -61,7 +56,7 @@ Using `cv2.undistort()` with the camera matrix and distortion coefficients we ca
 ### Image Pipeline
 
 #### 1. Image preprocessing
-A set of small image processing functions are implemented in the second cell of  `./src/AdvancedLaneProj4.ipynb` under "Image Processing Routines". The first routine is `undistort_img()` which calls `cv2.undistort()` using a precomputed camera calibration. 
+A set of small image processing functions are implemented in the second cell of  `AdvancedLaneProj4.ipynb` under "Image Processing Routines". The first routine is `undistort_img()` which calls `cv2.undistort()` using a precomputed camera calibration. 
 
 The next few functions, `sobel_thresh()`, `mag_thresh()`, and `dir_thresh()`, are variations of edge detection using the Sobel operator. The function `color_thresh()` transforms an image to HLS colorspace and attempts to highlight yellow and white. These four routines are used in combination in the function `processImage()` to create a binary image which enhances lane markings. 
 
@@ -144,6 +139,10 @@ Here's a [link to video result](./output_video/project_video_output.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-One glaring issue is the speed and memory usage of the method. The lane line polynomials are evaluated for every y-axis pixel (720) and 15 are stored in the history for each line. The history is also handled in a very inefficient manner requiring pushing and popping for every frame. A more efficient static array with a moving index could easily be implemented. As it is, the proceedure can only handle ~3 frames per second. To achieve real time lane detection, the image size should be scaled down and perhaps use only grayscale images. It is also not necessary to process every frame.
+Not knowing the actual curvature of the road makes it difficult to determine how far ahead to look. For example, if the road is perfectly straight, one could ahead perhaps 40m. However if the road is curving significantly, using that 40m window could mean the window contains road side objects which could be misinterpreted as lane lines.
+
+One solution is to simply not look as far ahead but using knowledge of the camera transformation it may be possible to create a solution which looks far ahead even on curvy roads. Using dead recogning we can construct a polygon around the anticipated road region then transform to the warped bird's eye view. One could also crop regions of the warped image which we are confident do not lie in the road.
+
+One glaring issue is the speed and memory usage of the method. The lane line polynomials are evaluated for every y-axis pixel (720) and 15 are stored in the history for each line. The history is also handled in a very inefficient manner requiring pushing and popping for every frame. A more efficient static array with a moving index could easily be implemented. As it is, the proceedure can only handle less than three frames per second. To achieve real time lane detection, the image size should be scaled down and perhaps use only grayscale images. It is also not necessary to process every frame.
 
 The two challenge videos each present different issues to overcome. In one video the road has patchwork which has high contrast between asphalt and concrete that confuses the lane line detection algorithm. The other video has a winding road with tree shadows, both of which make determining the lane lines difficult. To robustify the processes one could perform additional preprocessing steps such as color correction and contrast adjustment.
