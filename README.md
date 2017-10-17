@@ -136,7 +136,7 @@ Below is the unwarped estimatd lane using the inverse perspective matrix and ove
 ### Pipeline (video)
 
 
-Here's a [link to video result](./output_images/project_video_output.mp4)
+Here's a [link to video result](./output_video/project_video_output.mp4)
 
 ---
 
