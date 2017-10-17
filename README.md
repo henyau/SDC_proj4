@@ -16,11 +16,9 @@ The goals / steps of this project are the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
-<<<<<<< HEAD
-This readme/writeup refers to the iPython (Jupyter) Notebook file `AdvancedLaneProj4.ipynb`, however the code is also implemented in a Python file `laneOverlayCreate.py`
-=======
+
 This readme/writeup refers to the iPython (Jupyter) Notebook file `./src/AdvancedLaneProj4.ipynb`, however the code is also implemented in a Python file `./src/laneOverlayCreate.py`. Please view AdvancedLaneWriteup.ipynb to see the equations correctly displayed.
->>>>>>> 1134064415e540be86256a041ff161030880cb6b
+
 
 [//]: # (Image References)
 
